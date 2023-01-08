@@ -1,0 +1,32 @@
+Android系统类（context，ListView）是由BootClassLoader 实例加载的。加载系统预安装的类，全局唯一，App的类加载器的parent 就是这个，
+App的类是独属于一个PathClassLoader加载的，每个APP拥有不同的PathClassLoader实例加载器，有不同的dex ，so 搜索目录。
+ClassLoader.getSystemClassLoader(); 应该java中遗留下来的，目前没看到。
+PathClassLoader 和 DexClassLoader 都能加载外部的 dex／apk，只不过区别是 DexClassLoader 可以指定 optimizedDirectory，
+    也就是 dex2oat 的产物 .odex 存放的位置，而 PathClassLoader 只能使用系统默认位置。但是这个 optimizedDirectory 在 Android 8.0 以后也被舍弃了，只能使用系统默认的位置了。所以现在其实没啥区别了
+
+1.通过Class.forName()方法动态加载
+2.通过ClassLoader.loadClass()方法动态加载
+类的加载分为3个步骤:1.装载(Load),2.链接(Link),3.初始化(Intialize)
+
+Class.forName 和 ClassLoader.loadClass加载有何不同：
+（1）ClassLoader.loadClass也能加载一个类,但是不会触发类的初始化(也就是说不会对类的静态变量,静态代码块进行初始化操作)
+（2）Class.forName这种方式,不但会加载一个类,还会触发类的初始化阶段,也能够为这个类的静态变量,静态代码块进行初始化操作
+
+Class.forName(name);
+最终实现是由native方法classForName完成的
+
+ClassLoader.getSystemClassLoader().loadClass(name);
+
+最终实现是由native方法VMClassLoader.findLoadedClass(loader, name)
+
+
+1.隐式加载:
+(1)创建类的实例,也就是new一个对象
+(2)访问某个类或接口的静态变量,或者对该静态变量赋值
+(3)调用类的静态方法
+(4)反射Class.forName("android.app.ActivityThread")
+(5)初始化一个类的子类(会首先初始化子类的父类)
+2.显示加载：
+(1)使用LoadClass()加载
+(2)使用forName()加载
+
